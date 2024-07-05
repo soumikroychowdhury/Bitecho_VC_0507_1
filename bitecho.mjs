@@ -17,4 +17,12 @@ class Bitecho{
         this.indexPath=path.join(this.repoPath,'index');
         this.init();
     }
+    hashObject(content){
+        return crypto.createHash('sha1').update(content,'utf-8').digest('hex');
+    }
+    async updateStagingArea(filePath,fileHash){
+        const index=JSON.parse(await fs.readFile(this.indexPath,{encoding:'utf-8'}));
+        index.push({path:filePath,hash:fileHash});
+        await fs.writeFile(this.indexPath,JSON.stringify(index));
+    }
 };
