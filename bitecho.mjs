@@ -25,4 +25,13 @@ class Bitecho{
         index.push({path:filePath,hash:fileHash});
         await fs.writeFile(this.indexPath,JSON.stringify(index));
     }
+    async add(fileToBeAdded){
+        const fileData=await fs.readFile(fileToBeAdded,{encoding:'utf-8'});
+        const fileHash=this.hashObject(fileData);
+        console.log(fileHash);
+        const newFileHashedObjectPath=path.join(this.objectsPath,fileHash);
+        await fs.writeFile(newFileHashedObjectPath,fileData);
+        await this.updateStagingArea(fileToBeAdded,fileHash);
+        console.log(`Added ${fileToBeAdded}`);
+    }
 };
