@@ -34,4 +34,27 @@ class Bitecho{
         await this.updateStagingArea(fileToBeAdded,fileHash);
         console.log(`Added ${fileToBeAdded}`);
     }
+    async getCurrentHead(){
+        try{
+            return await fs.readFile(this.headPath,{encoding:'utf-8'});
+        }catch(e){
+            return null;
+        }
+    }
+    async commit(message){
+        const index=JSON.parse(await fs.readFile(this.indexPath,{encoding:'utf-8'}));
+        const parentCommit=await this.getCurrentHead();
+        const commitData={
+            timeStamp:new Date().toISOString(),
+            message,
+            files:index,
+            parent:parentCommit
+        };
+        const commitHash=this.hashObject(JSON.stringify(commitData));
+        const commitPath=path.join(this.objectsPath,commitHash);
+        await fs.writeFile(commitPath,JSON.stringify(commitData));
+        await fs.writeFile(this.headPath,commitHash);
+        await fs.writeFile(this.indexPath,JSON.stringify([]));
+        console.log(`Committed ${commitHash}`);
+    }
 };
