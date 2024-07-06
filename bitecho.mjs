@@ -57,4 +57,15 @@ class Bitecho{
         await fs.writeFile(this.indexPath,JSON.stringify([]));
         console.log(`Committed ${commitHash}`);
     }
+    async log(){
+        let commitHash=await this.getCurrentHead();
+        while(commitHash){
+            const commitData=JSON.parse(await fs.readFile(path.join(this.objectsPath,commitHash),{encoding:'utf-8'}));
+            console.log(`---------------------\n`);
+            console.log(`Commit: ${commitHash}`);
+            console.log(`Time Stamp: ${commitData.timeStamp}`);
+            console.log(`Message: ${commitData.message}`);
+            commitHash=commitData.parent;
+        }
+    }
 };
