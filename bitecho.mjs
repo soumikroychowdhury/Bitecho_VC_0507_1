@@ -1,8 +1,12 @@
+#!/usr/bin/env node
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import {diffLines} from 'diff';
 import chalk from 'chalk';
+import {Command} from 'commander';
+const a=new Command();
+
 class Bitecho{
     async init(){
         await fs.mkdir(this.objectsPath,{recursive:true});
@@ -128,3 +132,9 @@ class Bitecho{
         }
     }
 };
+a.command('init').action(()=>new Bitecho().init());
+a.command('add <file>').action((file)=>new Bitecho().add(file));
+a.command('commit <message>').action((message)=>new Bitecho().commit(message));
+a.command('log').action(()=>new Bitecho().log());
+a.command('show <commitHash>').action((commitHash)=>new Bitecho().commitDiff(commitHash));
+a.parse(process.argv);
