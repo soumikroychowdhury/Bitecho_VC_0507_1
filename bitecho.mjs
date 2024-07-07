@@ -68,4 +68,23 @@ class Bitecho{
             commitHash=commitData.parent;
         }
     }
+    async getCommit(commitHash){
+        const commitPath=path.join(this.objectsPath,commitHash);
+        try{
+            return await fs.readFile(commitPath,{encoding:'utf-8'});
+        }catch(e){
+            console.log(`Commit ${commitHash} not found`);
+            return null;
+        }
+    }
+    async getFileContent(fileHash){
+        const filePath=path.join(this.objectsPath,fileHash);
+        return fs.readFile(filePath,{encoding:'utf-8'});
+    }
+    async getParentFileContent(parentCommit,filePath){
+        const parentFile=parentCommit.files.find(file=>file.path===filePath);
+        if(parentFile){
+            return this.getFileContent(parentFile.hash);
+        }
+    }
 };
