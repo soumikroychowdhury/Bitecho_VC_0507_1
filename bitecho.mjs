@@ -1,5 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
+import {diffLines} from 'diff';
+import chalk from 'chalk';
 class Bitecho{
     async init(){
         await fs.mkdir(this.objectsPath,{recursive:true});
@@ -85,6 +88,43 @@ class Bitecho{
         const parentFile=parentCommit.files.find(file=>file.path===filePath);
         if(parentFile){
             return this.getFileContent(parentFile.hash);
+        }
+    }
+    async commitDiff(commitHash){
+        const commitData=JSON.parse(await this.getCommit(commitHash));
+        if(!commitData){
+            console.log("Commit not found");
+            return;
+        }
+        console.log(`Commit: ${commitHash}`);
+        console.log("Changes in the commit are:");
+        for(const file of commitData.files){
+            console.log(`\nFile: ${file.path}`);
+            const fileContent=await this.getFileContent(file.hash);
+            if(commitData.parent){
+                const parentCommit=JSON.parse(await this.getCommit(commitData.parent));
+                const parentFileContent=await this.getParentFileContent(parentCommit,file.path);
+                if(parentFileContent!==undefined){
+                    console.log('Diff:');
+                    const diff=diffLines(parentFileContent,fileContent);
+                    diff.forEach(line=>{
+                        if(line.added){
+                            process.stdout.write(chalk.green(`++ ${line.value}`));
+                        }else if(line.removed){
+                            process.stdout.write(chalk.red(`-- ${line.value}`));
+                        }else{
+                            process.stdout.write(chalk.white(`   ${line.value}`));
+                        }
+                    });
+                    console.log();
+                }else{
+                    console.log("::New file in this commit::");
+                    console.log(fileContent);
+                }
+            }else{
+                console.log("::First Commit::");
+                console.log(fileContent);
+            }
         }
     }
 };
